@@ -1,8 +1,20 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom"; 
+
 export default function Login() {
-    const navigate = useNavigate(); 
+  const navigate = useNavigate(); 
+
   const [role, setRole] = useState("Student");
+  const [email, setEmail] = useState("");   // ✅ NEW
+
+  // ✅ NEW LOGIN FUNCTION
+  const handleLogin = () => {
+    // store email + role
+    localStorage.setItem("userEmail", email);
+    localStorage.setItem("userRole", role);
+
+    navigate("/dashboard");
+  };
 
   return (
     <div style={styles.container}>
@@ -44,6 +56,8 @@ export default function Login() {
           type="email"
           placeholder="Enter your email"
           style={styles.input}
+          value={email}                         // ✅ NEW
+          onChange={(e) => setEmail(e.target.value)} // ✅ NEW
         />
 
         {/* Password */}
@@ -56,11 +70,11 @@ export default function Login() {
 
         {/* Button */}
         <button 
-  style={styles.loginBtn}
-  onClick={() => navigate("/dashboard")}  // ✅ ADD THIS
->
-  Login
-</button>
+          style={styles.loginBtn}
+          onClick={handleLogin}   // ✅ UPDATED
+        >
+          Login
+        </button>
 
         {/* Footer */}
         <p style={styles.footer}>
