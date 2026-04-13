@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
+import "./App.css";  // ✅ ADD THIS LINE
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
-
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import Cards from "./components/Cards";
@@ -13,7 +13,6 @@ import Student from "./components/Student";
 function AppLayout({ assessments, setAssessments, submissions, setSubmissions }) {
 
   const location = useLocation();
-
   const hideNavbar = ["/login", "/dashboard"].includes(location.pathname);
 
   return (
@@ -22,20 +21,16 @@ function AppLayout({ assessments, setAssessments, submissions, setSubmissions })
 
       <Routes>
 
-        <Route
-          path="/"
-          element={
-            <>
-              <Hero />
-              <Cards />
-            </>
-          }
-        />
+        <Route path="/" element={
+          <>
+            <Hero />
+            <Cards />
+          </>
+        } />
 
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
 
-        {/* ADMIN */}
         <Route
           path="/admin"
           element={
@@ -46,18 +41,11 @@ function AppLayout({ assessments, setAssessments, submissions, setSubmissions })
           }
         />
 
-        {/* SUPERVISOR */}
         <Route
           path="/supervisor"
-          element={
-            <Supervisor
-              assessments={assessments}
-              submissions={submissions}
-            />
-          }
+          element={<Supervisor assessments={assessments} />}
         />
 
-        {/* STUDENT */}
         <Route
           path="/student"
           element={
@@ -76,24 +64,24 @@ function AppLayout({ assessments, setAssessments, submissions, setSubmissions })
 
 export default function App() {
 
-  // ✅ assessments (saved)
+  // ✅ assessments (PROJECTS)
   const [assessments, setAssessments] = useState(() => {
     const saved = localStorage.getItem("assessments");
     return saved ? JSON.parse(saved) : [];
   });
 
-  // ✅ submissions (saved)
+  // ✅ submissions
   const [submissions, setSubmissions] = useState(() => {
     const saved = localStorage.getItem("submissions");
     return saved ? JSON.parse(saved) : [];
   });
 
-  // save assessments
+  // SAVE assessments
   useEffect(() => {
     localStorage.setItem("assessments", JSON.stringify(assessments));
   }, [assessments]);
 
-  // save submissions
+  // SAVE submissions
   useEffect(() => {
     localStorage.setItem("submissions", JSON.stringify(submissions));
   }, [submissions]);

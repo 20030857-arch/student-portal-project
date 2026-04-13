@@ -3,15 +3,21 @@ import React, { useState } from "react";
 const Student = ({ assessments, submissions, setSubmissions }) => {
 
   const [studentName, setStudentName] = useState("");
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFiles, setSelectedFiles] = useState({});
 
-  const handleFileChange = (e) => {
-    setSelectedFile(e.target.files[0]);
+  // handle file per project
+  const handleFileChange = (e, projectId) => {
+    setSelectedFiles({
+      ...selectedFiles,
+      [projectId]: e.target.files[0]
+    });
   };
 
+  // submit
   const handleSubmit = (projectId) => {
+    const file = selectedFiles[projectId];
 
-    if (!studentName || !selectedFile) {
+    if (!studentName || !file) {
       alert("Enter name and choose file");
       return;
     }
@@ -20,61 +26,73 @@ const Student = ({ assessments, submissions, setSubmissions }) => {
       id: Date.now(),
       student: studentName,
       projectId,
-      fileName: selectedFile.name
+      fileName: file.name
     };
 
     setSubmissions([...submissions, newSubmission]);
 
-    alert("File submitted!");
+    alert("File submitted successfully!");
 
-    setSelectedFile(null);
+    // clear file after submit
+    setSelectedFiles({
+      ...selectedFiles,
+      [projectId]: null
+    });
   };
 
   return (
-    <div style={{ padding: "20px" }}>
+    <div className="app-container">
       <h1>Student Dashboard</h1>
 
-      {/* Student Name */}
-      <input
-        placeholder="Enter your name"
-        value={studentName}
-        onChange={(e) => setStudentName(e.target.value)}
-        style={{ padding: "10px", marginBottom: "20px" }}
-      />
+      {/* Name Input */}
+      <div className="card">
+        <h3>Your Details</h3>
 
+        <input
+          placeholder="Enter your name"
+          value={studentName}
+          onChange={(e) => setStudentName(e.target.value)}
+        />
+      </div>
+
+      {/* Assessments */}
       <h3>Available Assessments</h3>
 
-      {assessments.map((a) => (
-        <div key={a.id} style={styles.card}>
-          <h4>{a.title}</h4>
-          <p>{a.description}</p>
-          <p><b>Marks:</b> {a.marks}</p>
-          <p><b>Deadline:</b> {a.dueDate}</p>
+      {assessments.length === 0 ? (
+        <p>No assessments available</p>
+      ) : (
+        assessments.map((a) => (
+          <div key={a.id} className="card">
+            <h4>{a.title}</h4>
+            <p>{a.description}</p>
+            <p><b>Marks:</b> {a.marks}</p>
+            <p><b>Deadline:</b> {a.dueDate}</p>
 
-          {/* ✅ FILE INPUT PER PROJECT */}
-          <input
-            type="file"
-            onChange={handleFileChange}
-            style={{ marginBottom: "10px" }}
-          />
+            {/* File Upload */}
+            <input
+              type="file"
+              onChange={(e) => handleFileChange(e, a.id)}
+            />
 
-          {/* ✅ SUBMIT BUTTON */}
-          <button onClick={() => handleSubmit(a.id)}>
-            Submit File
-          </button>
-        </div>
-      ))}
+            {/* Show selected file */}
+            {selectedFiles[a.id] && (
+              <p style={{ fontSize: "12px" }}>
+                Selected: {selectedFiles[a.id].name}
+              </p>
+            )}
+
+            {/* Submit Button */}
+            <button
+              onClick={() => handleSubmit(a.id)}
+              className="btn btn-primary"
+            >
+              Submit File
+            </button>
+          </div>
+        ))
+      )}
     </div>
   );
-};
-
-const styles = {
-  card: {
-    border: "1px solid #ccc",
-    padding: "10px",
-    marginBottom: "10px",
-    borderRadius: "8px"
-  }
 };
 
 export default Student;
