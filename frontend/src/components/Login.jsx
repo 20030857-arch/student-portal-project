@@ -1,203 +1,125 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 
-export default function Login() {
-  const navigate = useNavigate(); 
+const Login = () => {
+  const navigate = useNavigate();
 
-  const [role, setRole] = useState("Student");
-  const [email, setEmail] = useState("");   // ✅ NEW
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  // ✅ NEW LOGIN FUNCTION
-  const handleLogin = () => {
-    // store email + role
-    localStorage.setItem("userEmail", email);
-    localStorage.setItem("userRole", role);
+  // Demo users
+  const users = [
+    { email: "student@gmail.com", password: "1234", role: "student" },
+    { email: "supervisor@gmail.com", password: "1234", role: "supervisor" },
+    { email: "admin@gmail.com", password: "1234", role: "admin" }
+  ];
 
-    navigate("/dashboard");
+  const handleLogin = (e) => {
+    e.preventDefault();
+
+    const user = users.find(
+      (u) => u.email === email && u.password === password
+    );
+
+    if (user) {
+      alert(`Login successful as ${user.role}`);
+
+      // Redirect based on role
+      if (user.role === "student") {
+        navigate("/student");
+      } else if (user.role === "supervisor") {
+        navigate("/supervisor");
+      } else {
+        navigate("/admin");
+      }
+    } else {
+      alert("Invalid email or password");
+    }
   };
 
-  return (
+return (
+  <div>
+
+
     <div style={styles.container}>
-      
-      {/* Logo */}
-      <div style={styles.logoBox}>
-        <div style={styles.logoIcon}>🏠</div>
-        <span style={styles.logoText}>EMS</span>
-      </div>
+      <h2>EMS</h2>
+      <h1>Welcome Back</h1>
+      <p>Sign in to your account</p>
 
-      <h1 style={styles.title}>Welcome Back</h1>
-      <p style={styles.subtitle}>Sign in to your account</p>
-
-      {/* Card */}
-      <div style={styles.card}>
+      <form onSubmit={handleLogin} style={styles.form}>
         
-        {/* Role Selection */}
-        <p style={styles.label}>Select Role</p>
-        <div style={styles.roleContainer}>
-          {["Student", "Supervisor", "Admin"].map((r) => (
-            <button
-              key={r}
-              onClick={() => setRole(r)}
-              style={{
-                ...styles.roleButton,
-                background: role === r ? "#eef2ff" : "white",
-                border: role === r ? "2px solid #4f46e5" : "1px solid #ddd",
-                color: role === r ? "#4f46e5" : "#555",
-              }}
-            >
-              {r}
-            </button>
-          ))}
-        </div>
-
-        {/* Email */}
-        <p style={styles.label}>Email Address</p>
+        <label>Email Address</label>
         <input
           type="email"
           placeholder="Enter your email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
           style={styles.input}
-          value={email}                         // ✅ NEW
-          onChange={(e) => setEmail(e.target.value)} // ✅ NEW
         />
 
-        {/* Password */}
-        <p style={styles.label}>Password</p>
+        <label>Password</label>
         <input
           type="password"
           placeholder="Enter your password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
           style={styles.input}
         />
 
-        {/* Button */}
-        <button 
-          style={styles.loginBtn}
-          onClick={handleLogin}   // ✅ UPDATED
-        >
+        <button type="submit" style={styles.button}>
           Login
         </button>
 
-        {/* Footer */}
-        <p style={styles.footer}>
-          Don't have an account? <span style={styles.link}>Sign Up</span>
+        <p style={{ marginTop: "10px" }}>
+          Demo:
+          <br />
+          student@gmail.com / 1234
+          <br />
+          supervisor@gmail.com / 1234
+          <br />
+          admin@gmail.com / 1234
         </p>
 
-        <div style={styles.demo}>
-          Demo: Use any email and password to login
-        </div>
-
-      </div>
+      </form>
     </div>
+
+  </div>
   );
-}
+};
 
 const styles = {
   container: {
-    textAlign: "center",
-    paddingTop: "80px",
-    background: "#f8fafc",
-    minHeight: "100vh",
-  },
-
-  logoBox: {
     display: "flex",
-    justifyContent: "center",
+    flexDirection: "column",
     alignItems: "center",
-    gap: "10px",
+    justifyContent: "center",
+    height: "100vh",
+    background: "#f5f5f5"
   },
-
-  logoIcon: {
-    background: "#2563eb",
-    color: "white",
-    padding: "10px",
-    borderRadius: "12px",
-  },
-
-  logoText: {
-    fontWeight: "700",
-    fontSize: "20px",
-  },
-
-  title: {
-    marginTop: "20px",
-    fontSize: "28px",
-    fontWeight: "700",
-  },
-
-  subtitle: {
-    color: "#64748b",
-    marginBottom: "30px",
-  },
-
-  card: {
+  form: {
     background: "white",
-    width: "380px",
-    margin: "0 auto",
-    padding: "30px",
-    borderRadius: "16px",
-    boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
-    textAlign: "left",
-  },
-
-  label: {
-    fontSize: "14px",
-    marginBottom: "6px",
-    marginTop: "15px",
-    color: "#334155",
-  },
-
-  roleContainer: {
+    padding: "20px",
+    borderRadius: "10px",
+    width: "300px",
     display: "flex",
-    gap: "10px",
-    marginBottom: "10px",
+    flexDirection: "column",
+    gap: "10px"
   },
-
-  roleButton: {
-    flex: 1,
-    padding: "10px",
-    borderRadius: "10px",
-    cursor: "pointer",
-    fontWeight: "500",
-  },
-
   input: {
-    width: "100%",
-    padding: "12px",
-    borderRadius: "10px",
-    border: "1px solid #ddd",
-    marginBottom: "10px",
-    outline: "none",
+    padding: "10px",
+    borderRadius: "5px",
+    border: "1px solid #ccc"
   },
-
-  loginBtn: {
-    width: "100%",
-    padding: "14px",
-    background: "#020617",
+  button: {
+    padding: "10px",
+    background: "#000",
     color: "white",
     border: "none",
-    borderRadius: "10px",
-    marginTop: "15px",
-    cursor: "pointer",
-    fontWeight: "600",
-  },
-
-  footer: {
-    textAlign: "center",
-    marginTop: "15px",
-    fontSize: "14px",
-  },
-
-  link: {
-    color: "#2563eb",
-    cursor: "pointer",
-  },
-
-  demo: {
-    marginTop: "15px",
-    background: "#eef2ff",
-    padding: "10px",
-    borderRadius: "10px",
-    fontSize: "13px",
-    textAlign: "center",
-    color: "#1e3a8a",
-  },
+    borderRadius: "5px",
+    cursor: "pointer"
+  }
 };
+
+export default Login;
