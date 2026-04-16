@@ -16,8 +16,12 @@ function AppLayout({ assessments, setAssessments, submissions, setSubmissions })
   const hideNavbar = ["/login", "/dashboard"].includes(location.pathname);
 
   return (
-    <>
-      {!hideNavbar && <Navbar />}
+    <Router>
+      <div style={{ padding: "15px", borderBottom: "1px solid #ccc" }}>
+        <Link to="/" style={{ marginRight: "15px" }}>Assessments</Link>
+        <Link to="/admin/create" style={{ marginRight: "15px" }}>Create Assessment</Link>
+        <Link to="/admin/submissions">Admin - View Submissions</Link>
+      </div>
 
       <Routes>
 
@@ -58,7 +62,7 @@ function AppLayout({ assessments, setAssessments, submissions, setSubmissions })
         />
 
       </Routes>
-    </>
+    </Router>
   );
 }
 
