@@ -1,106 +1,112 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { useParams } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import AppLayout from "../components/AppLayout";
 
-function SubmitAssessment() {
-  const { id } = useParams();
-  const [assessment, setAssessment] = useState(null);
+export default function SubmitAssessment() {
   const [submissionText, setSubmissionText] = useState("");
-  const [file, setFile] = useState(null);
-  const [message, setMessage] = useState("");
-
-  const studentId = 2;
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const studentId = localStorage.getItem("userId");
+  const userRole = localStorage.getItem("userRole");
 
   useEffect(() => {
-    fetchAssessment();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const fetchAssessment = async () => {
-    try {
-      const res = await axios.get(`http://localhost:5002/api/assessments/${id}`);
-      setAssessment(res.data);
-    } catch (error) {
-      console.error("Error fetching assessment:", error);
+    // Protect this page - only students can access
+    if (userRole && userRole.toLowerCase() !== "student") {
+      navigate("/dashboard");
     }
-  };
-
-  const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
-  };
+  }, [userRole, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!file) {
-      setMessage("Please select a file to submit");
+    if (!submissionText.trim()) {
+      alert("Please enter submission text");
       return;
     }
 
     try {
-      const formData = new FormData();
-      formData.append("assessment_id", id);
-      formData.append("student_id", studentId);
-      formData.append("submission_text", submissionText);
-      formData.append("file", file);
-
-      await axios.post("http://localhost:5002/api/submissions", formData, {
+      const res = await fetch("http://localhost:5002/api/submissions", {
+        method: "POST",
         headers: {
-          "Content-Type": "multipart/form-data",
+          "Content-Type": "application/json"
         },
+        body: JSON.stringify({
+          assessment_id: parseInt(id),
+          student_id: parseInt(studentId),
+          submission_text: submissionText
+        })
       });
 
-      setMessage("Submission successful!");
-      setSubmissionText("");
-      setFile(null);
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.message || "Failed to submit assessment");
+        return;
+      }
+
+      alert("Assessment submitted successfully");
+      navigate("/assessments");
     } catch (error) {
       console.error("Submission error:", error);
-      setMessage("Failed to submit");
+      alert("Server error: " + error.message);
     }
   };
 
-  if (!assessment) return <p>Loading...</p>;
-
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>{assessment.title}</h2>
-      <p><strong>Subject:</strong> {assessment.subject}</p>
-      <p>{assessment.description}</p>
-      <p><strong>Due Date:</strong> {new Date(assessment.due_date).toLocaleString()}</p>
-
+    <AppLayout
+      title="Submit Assessment"
+      subtitle="Upload or type your assessment submission"
+      backTo="/assessments"
+    >
       <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: "15px" }}>
-          <label htmlFor="file"><strong>Upload File:</strong></label>
-          <br />
-          <input
-            id="file"
-            type="file"
-            onChange={handleFileChange}
-            style={{ marginTop: "5px" }}
-          />
-          {file && <p style={{ color: "green" }}>Selected: {file.name}</p>}
-        </div>
+        <label style={styles.label}>Submission Text</label>
+        <textarea
+          style={styles.textarea}
+          placeholder="Write your submission here..."
+          value={submissionText}
+          onChange={(e) => setSubmissionText(e.target.value)}
+        />
 
-        <div style={{ marginBottom: "15px" }}>
-          <label htmlFor="notes"><strong>Notes (Optional):</strong></label>
-          <br />
-          <textarea
-            id="notes"
-            rows="6"
-            cols="50"
-            placeholder="Add any notes about your submission"
-            value={submissionText}
-            onChange={(e) => setSubmissionText(e.target.value)}
-            style={{ marginTop: "5px" }}
-          />
+        <div style={styles.buttonRow}>
+          <button type="submit" style={styles.submitBtn}>
+            Submit
+          </button>
         </div>
-
-        <button type="submit">Submit Assessment</button>
       </form>
-
-      {message && <p style={{ marginTop: "15px", fontWeight: "bold", color: message.includes("successful") ? "green" : "red" }}>{message}</p>}
-    </div>
+    </AppLayout>
   );
 }
 
-export default SubmitAssessment;
+const styles = {
+  label: {
+    display: "block",
+    fontSize: "16px",
+    fontWeight: "600",
+    marginBottom: "8px",
+    marginTop: "18px",
+    color: "#111827",
+  },
+  textarea: {
+    width: "100%",
+    minHeight: "160px",
+    padding: "14px",
+    borderRadius: "12px",
+    border: "1px solid #d1d5db",
+    fontSize: "15px",
+    boxSizing: "border-box",
+    resize: "vertical",
+  },
+  buttonRow: {
+    marginTop: "24px",
+  },
+  submitBtn: {
+    backgroundColor: "#2563eb",
+    color: "#fff",
+    border: "none",
+    padding: "14px 22px",
+    borderRadius: "12px",
+    fontSize: "16px",
+    fontWeight: "600",
+    cursor: "pointer",
+  },
+};

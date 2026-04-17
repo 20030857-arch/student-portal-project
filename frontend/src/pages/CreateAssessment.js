@@ -1,176 +1,146 @@
-import React, { useState } from "react";
-import axios from "axios";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import AppLayout from "../components/AppLayout";
 
-function CreateAssessment() {
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    subject: "",
-    due_date: "",
-    created_by: 1
-  });
+export default function CreateAssessment() {
+  const navigate = useNavigate();
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [subject, setSubject] = useState("");
+  const [dueDate, setDueDate] = useState("");
+  const createdBy = localStorage.getItem("userId");
+  const userRole = localStorage.getItem("userRole");
 
-  const [message, setMessage] = useState("");
-  const [isSuccess, setIsSuccess] = useState(false);
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  useEffect(() => {
+    // Protect this page - only admins can access
+    if (userRole && userRole.toLowerCase() !== "admin") {
+      navigate("/dashboard");
+    }
+  }, [userRole, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate form
-    if (!formData.title || !formData.subject || !formData.due_date) {
-      setMessage("Please fill in all required fields");
-      setIsSuccess(false);
-      return;
-    }
-
     try {
-      const res = await axios.post("http://localhost:5002/api/assessments", formData);
-      setMessage(`Assessment created successfully! (ID: ${res.data.assessmentId})`);
-      setIsSuccess(true);
-      setFormData({
-        title: "",
-        description: "",
-        subject: "",
-        due_date: "",
-        created_by: 1
+      const res = await fetch("http://localhost:5002/api/assessments", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          title,
+          description,
+          subject,
+          due_date: dueDate,
+          created_by: createdBy
+        })
       });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.message);
+        return;
+      }
+
+      alert("Assessment created successfully");
+      setTitle("");
+      setDescription("");
+      setSubject("");
+      setDueDate("");
     } catch (error) {
-      console.error("Error creating assessment:", error);
-      setMessage("Failed to create assessment. Please try again.");
-      setIsSuccess(false);
+      console.error(error);
+      alert("Server error");
     }
   };
 
   return (
-    <div style={{ padding: "20px", maxWidth: "500px" }}>
-      <h2>Create Assessment</h2>
+    <AppLayout
+      title="Create Assessment"
+      subtitle="Add a new assessment for students"
+      backTo="/dashboard"
+    >
+      <form onSubmit={handleSubmit}>
+        <label style={styles.label}>Assessment Title *</label>
+        <input
+          style={styles.input}
+          placeholder="e.g., Database Design Project"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
 
-      <form onSubmit={handleSubmit} style={{ marginBottom: "20px" }}>
-        <div style={{ marginBottom: "15px" }}>
-          <label htmlFor="title"><strong>Assessment Title *</strong></label>
-          <input
-            id="title"
-            type="text"
-            name="title"
-            placeholder="e.g., Database Design Project"
-            value={formData.title}
-            onChange={handleChange}
-            style={{
-              width: "100%",
-              padding: "8px",
-              marginTop: "5px",
-              boxSizing: "border-box",
-            }}
-            required
-          />
+        <label style={styles.label}>Description</label>
+        <textarea
+          style={styles.textarea}
+          placeholder="Assessment description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
+
+        <label style={styles.label}>Subject *</label>
+        <input
+          style={styles.input}
+          placeholder="e.g., ICT, Mathematics"
+          value={subject}
+          onChange={(e) => setSubject(e.target.value)}
+        />
+
+        <label style={styles.label}>Due Date *</label>
+        <input
+          type="datetime-local"
+          style={styles.input}
+          value={dueDate}
+          onChange={(e) => setDueDate(e.target.value)}
+        />
+
+        <div style={styles.buttonRow}>
+          <button type="submit" style={styles.createBtn}>
+            Create Assessment
+          </button>
         </div>
-
-        <div style={{ marginBottom: "15px" }}>
-          <label htmlFor="description"><strong>Description</strong></label>
-          <textarea
-            id="description"
-            name="description"
-            placeholder="Assessment description"
-            value={formData.description}
-            onChange={handleChange}
-            rows="4"
-            style={{
-              width: "100%",
-              padding: "8px",
-              marginTop: "5px",
-              boxSizing: "border-box",
-            }}
-          />
-        </div>
-
-        <div style={{ marginBottom: "15px" }}>
-          <label htmlFor="subject"><strong>Subject *</strong></label>
-          <input
-            id="subject"
-            type="text"
-            name="subject"
-            placeholder="e.g., ICT, Mathematics"
-            value={formData.subject}
-            onChange={handleChange}
-            style={{
-              width: "100%",
-              padding: "8px",
-              marginTop: "5px",
-              boxSizing: "border-box",
-            }}
-            required
-          />
-        </div>
-
-        <div style={{ marginBottom: "15px" }}>
-          <label htmlFor="due_date"><strong>Due Date *</strong></label>
-          <input
-            id="due_date"
-            type="datetime-local"
-            name="due_date"
-            value={formData.due_date}
-            onChange={handleChange}
-            style={{
-              width: "100%",
-              padding: "8px",
-              marginTop: "5px",
-              boxSizing: "border-box",
-            }}
-            required
-          />
-        </div>
-
-        <button
-          type="submit"
-          style={{
-            padding: "10px 20px",
-            backgroundColor: "#4caf50",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-            fontSize: "16px",
-          }}
-        >
-          Create Assessment
-        </button>
       </form>
-
-      {message && (
-        <div
-          style={{
-            padding: "15px",
-            backgroundColor: isSuccess ? "#d4edda" : "#f8d7da",
-            borderLeft: `4px solid ${isSuccess ? "#28a745" : "#dc3545"}`,
-            color: isSuccess ? "#155724" : "#721c24",
-            marginBottom: "20px",
-            borderRadius: "4px",
-          }}
-        >
-          {message}
-        </div>
-      )}
-
-      <Link
-        to="/"
-        style={{
-          padding: "10px 20px",
-          backgroundColor: "#2196F3",
-          color: "white",
-          textDecoration: "none",
-          borderRadius: "4px",
-          display: "inline-block",
-        }}
-      >
-        ← Back to Assessments
-      </Link>
-    </div>
+    </AppLayout>
   );
 }
 
-export default CreateAssessment;
+const styles = {
+  label: {
+    display: "block",
+    fontSize: "16px",
+    fontWeight: "600",
+    marginBottom: "8px",
+    marginTop: "18px",
+    color: "#111827",
+  },
+  input: {
+    width: "100%",
+    padding: "14px",
+    borderRadius: "12px",
+    border: "1px solid #d1d5db",
+    fontSize: "15px",
+    boxSizing: "border-box",
+  },
+  textarea: {
+    width: "100%",
+    minHeight: "130px",
+    padding: "14px",
+    borderRadius: "12px",
+    border: "1px solid #d1d5db",
+    fontSize: "15px",
+    boxSizing: "border-box",
+    resize: "vertical",
+  },
+  buttonRow: {
+    marginTop: "24px",
+  },
+  createBtn: {
+    backgroundColor: "#22c55e",
+    color: "#fff",
+    border: "none",
+    padding: "14px 22px",
+    borderRadius: "12px",
+    fontSize: "16px",
+    fontWeight: "600",
+    cursor: "pointer",
+  },
+};

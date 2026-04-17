@@ -5,19 +5,19 @@ export default function Cards() {
     <section style={styles.container}>
       
       <div style={styles.card}>
-        <div style={styles.icon}>📄</div>
+        <div style={styles.icon}>Document</div>
         <h3>Assessment Management</h3>
         <p>Create, assign, and track assessments easily.</p>
       </div>
 
       <div style={styles.card}>
-        <div style={styles.icon}>👥</div>
+        <div style={styles.icon}>Users</div>
         <h3>Role-Based Access</h3>
         <p>Different roles for students, supervisors and admins.</p>
       </div>
 
       <div style={styles.card}>
-        <div style={styles.icon}>📊</div>
+        <div style={styles.icon}>Analytics</div>
         <h3>Analytics & Tracking</h3>
         <p>Track progress and performance with insights.</p>
       </div>

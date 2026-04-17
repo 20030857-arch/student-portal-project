@@ -66,6 +66,8 @@ return (
           onChange={(e) => setPassword(e.target.value)}
           required
           style={styles.input}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
         />
 
         <button type="submit" style={styles.button}>
