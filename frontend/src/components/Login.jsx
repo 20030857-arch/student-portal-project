@@ -1,90 +1,84 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
-  const [role, setRole] = useState("Student");
-  const [email, setEmail] = useState("");   // ✅ NEW
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  // ✅ NEW LOGIN FUNCTION
-  const handleLogin = () => {
-    // store email + role
-    localStorage.setItem("userEmail", email);
-    localStorage.setItem("userRole", role);
+  const handleLogin = async () => {
+    if (!email || !password) {
+      alert("Please enter email and password");
+      return;
+    }
 
-    navigate("/dashboard");
+    try {
+      const res = await fetch("http://localhost:5002/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.message);
+        return;
+      }
+
+      localStorage.setItem("userId", data.user.id);
+      localStorage.setItem("userName", data.user.name);
+      localStorage.setItem("userEmail", data.user.email);
+      localStorage.setItem("userRole", data.user.role);
+
+      navigate("/dashboard");
+    } catch (error) {
+      console.error(error);
+      alert("Server error");
+    }
   };
 
   return (
     <div style={styles.container}>
-      
-      {/* Logo */}
       <div style={styles.logoBox}>
-        <div style={styles.logoIcon}>🏠</div>
+        <div style={styles.logoIcon}>EMS</div>
         <span style={styles.logoText}>EMS</span>
       </div>
 
       <h1 style={styles.title}>Welcome Back</h1>
       <p style={styles.subtitle}>Sign in to your account</p>
 
-      {/* Card */}
       <div style={styles.card}>
-        
-        {/* Role Selection */}
-        <p style={styles.label}>Select Role</p>
-        <div style={styles.roleContainer}>
-          {["Student", "Supervisor", "Admin"].map((r) => (
-            <button
-              key={r}
-              onClick={() => setRole(r)}
-              style={{
-                ...styles.roleButton,
-                background: role === r ? "#eef2ff" : "white",
-                border: role === r ? "2px solid #4f46e5" : "1px solid #ddd",
-                color: role === r ? "#4f46e5" : "#555",
-              }}
-            >
-              {r}
-            </button>
-          ))}
-        </div>
-
-        {/* Email */}
         <p style={styles.label}>Email Address</p>
         <input
           type="email"
           placeholder="Enter your email"
           style={styles.input}
-          value={email}                         // ✅ NEW
-          onChange={(e) => setEmail(e.target.value)} // ✅ NEW
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
         />
 
-        {/* Password */}
         <p style={styles.label}>Password</p>
         <input
           type="password"
           placeholder="Enter your password"
           style={styles.input}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
         />
 
-        {/* Button */}
-        <button 
-          style={styles.loginBtn}
-          onClick={handleLogin}   // ✅ UPDATED
-        >
+        <button style={styles.loginBtn} onClick={handleLogin}>
           Login
         </button>
 
-        {/* Footer */}
-        <p style={styles.footer}>
-          Don't have an account? <span style={styles.link}>Sign Up</span>
-        </p>
-
         <div style={styles.demo}>
-          Demo: Use any email and password to login
+          Admin: admin@test.com / admin123
+          <br />
+          Student: student@test.com / student123
         </div>
-
       </div>
     </div>
   );
@@ -97,37 +91,31 @@ const styles = {
     background: "#f8fafc",
     minHeight: "100vh",
   },
-
   logoBox: {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
     gap: "10px",
   },
-
   logoIcon: {
     background: "#2563eb",
     color: "white",
     padding: "10px",
     borderRadius: "12px",
   },
-
   logoText: {
     fontWeight: "700",
     fontSize: "20px",
   },
-
   title: {
     marginTop: "20px",
     fontSize: "28px",
     fontWeight: "700",
   },
-
   subtitle: {
     color: "#64748b",
     marginBottom: "30px",
   },
-
   card: {
     background: "white",
     width: "380px",
@@ -137,28 +125,12 @@ const styles = {
     boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
     textAlign: "left",
   },
-
   label: {
     fontSize: "14px",
     marginBottom: "6px",
     marginTop: "15px",
     color: "#334155",
   },
-
-  roleContainer: {
-    display: "flex",
-    gap: "10px",
-    marginBottom: "10px",
-  },
-
-  roleButton: {
-    flex: 1,
-    padding: "10px",
-    borderRadius: "10px",
-    cursor: "pointer",
-    fontWeight: "500",
-  },
-
   input: {
     width: "100%",
     padding: "12px",
@@ -166,8 +138,8 @@ const styles = {
     border: "1px solid #ddd",
     marginBottom: "10px",
     outline: "none",
+    boxSizing: "border-box",
   },
-
   loginBtn: {
     width: "100%",
     padding: "14px",
@@ -179,18 +151,6 @@ const styles = {
     cursor: "pointer",
     fontWeight: "600",
   },
-
-  footer: {
-    textAlign: "center",
-    marginTop: "15px",
-    fontSize: "14px",
-  },
-
-  link: {
-    color: "#2563eb",
-    cursor: "pointer",
-  },
-
   demo: {
     marginTop: "15px",
     background: "#eef2ff",
